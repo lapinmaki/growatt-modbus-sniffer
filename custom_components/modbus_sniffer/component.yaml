@@ -1,3 +1,0 @@
-name: "modbus_sniffer"
-domain: "modbus_sniffer"
-dependencies: ["uart"]
