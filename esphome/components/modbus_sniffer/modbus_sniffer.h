@@ -1,41 +1,26 @@
 #pragma once
-#include "esphome/core/component.h"
-#include "esphome/components/uart/uart.h"
-#include "esphome/components/text_sensor/text_sensor.h"
 
-namespace esphome {
-namespace modbus_sniffer {
+#include "esphome.h"
 
-class ModbusSniffer : public Component, public uart::UARTDevice {
- public:
-  ModbusSniffer(uart::UARTComponent *parent) : uart::UARTDevice(parent) {}
+class ModbusSniffer : public Component, public UARTDevice {
+public:
+    ModbusSniffer(UARTComponent *parent) : UARTDevice(parent) {}
 
-  void set_text_sensor(text_sensor::TextSensor *sensor) { sensor_ = sensor; }
-
-  void loop() override {
-    while (this->available()) {
-      uint8_t byte;
-      this->read_byte(&byte);
-      buffer_ += byte_to_hex(byte) + " ";
-      if (byte == 0x0D || byte == 0x0A || buffer_.length() > 50) {
-        if (sensor_ != nullptr) {
-          sensor_->publish_state(buffer_);
-        }
-        buffer_.clear();
-      }
+    void setup() override {
+        // Asennetaan tarvittavat alustuskomennot
     }
-  }
 
- protected:
-  std::string buffer_;
-  text_sensor::TextSensor *sensor_{nullptr};
+    void loop() override {
+        // Tässä voidaan lukea Modbus-dataa
+        if (this->available()) {
+            this->last_modbus_frame = this->read(); // Muokkaa tämän mukaan
+        }
+    }
 
-  std::string byte_to_hex(uint8_t byte) {
-    char hex[5];
-    sprintf(hex, "%02X", byte);
-    return std::string(hex);
-  }
+    std::string get_data() {
+        return this->last_modbus_frame; // Palautetaan viimeisin vastaanotettu Modbus-data
+    }
+
+private:
+    std::string last_modbus_frame; // Muuttuja, johon tallennetaan viimeisin Modbus-frame
 };
-
-}  // namespace modbus_sniffer
-}  // namespace esphome
