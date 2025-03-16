@@ -1,20 +1,21 @@
 #include "modbus_sniffer.h"
 
 namespace esphome {
-namespace modbus_sniffer {
+namespace custom_components {
 
-class ModbusSniffer : public Component, public UARTDevice {
-public:
-    // Metodi, joka palauttaa viimeisimmän Modbus-datan
-    std::string get_data() {
-        return this->last_modbus_frame;  // Esimerkki: palauta viimeisin vastaanotettu Modbus data
+  // Liitetään ModbusSniffer C++-koodiin
+  static ModbusSniffer *modbus_sniffer = nullptr;
+
+  void setup() {
+    modbus_sniffer = new ModbusSniffer(id(modbus_uart));
+    App.register_component(modbus_sniffer);
+  }
+
+  void loop() {
+    if (modbus_sniffer != nullptr) {
+        modbus_sniffer->loop();  // Luetaan Modbus-data
     }
+  }
 
-private:
-    std::string last_modbus_frame;  // Muuttuja, johon tallennetaan viimeisin vastaanotettu Modbus-frame
-};
-
-// Nothing additional needed here yet.
-
-}  // namespace modbus_sniffer
+}  // namespace custom_components
 }  // namespace esphome
